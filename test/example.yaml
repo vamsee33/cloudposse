@@ -27,6 +27,8 @@ components:
           - ecpu:
               maximum: 1000
               unit: "ECU"
+
+              condition     = can(regex("^(/[a-z0-9]+)+$", each.key))
         serverless_snapshot_arns_to_restore: []
         sg_name: "redis-serverless-sg"
         auth_token: "mySuperSecretToken"
