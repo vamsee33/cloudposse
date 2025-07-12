@@ -1,0 +1,22 @@
+vars:
+  serverless_enabled: true
+  serverless_major_engine_version: "7.0"
+  serverless_cache_usage_limits:
+    - type: "data_storage"
+      maximum: 100
+      unit: "GB"
+    - type: "ecpu"
+      maximum: 1000
+      unit: "ECU"
+  serverless_snapshot_arns_to_restore: []
+  multi_az_enabled: true
+  at_rest_encryption_enabled: true
+  transit_encryption_enabled: true
+  kms_key_id: null # Use AWS managed key by default
+  auth_token: null # Set to a value to enable AUTH
+  allow_all_egress: true
+  snapshot_retention_limit: 7
+  automatic_failover_enabled: true
+  auto_minor_version_upgrade: true
+  cloudwatch_metric_alarms_enabled: false
+  auth_token_enabled: false
