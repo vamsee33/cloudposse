@@ -9,4 +9,4 @@ permissions:
 
 jobs:
   enforce:
-    uses: .github/workflows/code_owners_composite.yml@v1.0.0
+    uses: ./.github/workflows/code_owners_composite.yml
