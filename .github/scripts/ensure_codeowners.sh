@@ -4,24 +4,23 @@ set -euo pipefail
 CODEOWNERS_PATH=".github/CODEOWNERS"
 
 # ---- POLICY: Strict (default) ----
-STANDARD_CONTENT="* @DriveWealth/devops"
+STANDARD_CONTENT="* @growhi/devops"
 
 # ---- POLICY: Targeted (uncomment to use instead) ----
-# STANDARD_CONTENT=".github/CODEOWNERS @DriveWealth/devops"
+# STANDARD_CONTENT=".github/CODEOWNERS @growhi/devops"
 
-if [[ ! -f "$CODEOWNERS_PATH" ]]; then
-  echo " ERROR: $CODEOWNERS_PATH does not exist."
-  exit 1
+mkdir -p .github
+
+# Read existing if present, normalize whitespace
+if [[ -f "$CODEOWNERS_PATH" ]]; then
+  existing="$(grep -v '^[[:space:]]*$' "$CODEOWNERS_PATH" | sed 's/[[:space:]]\+/ /g')"
+else
+  existing=""
 fi
 
-content="$(grep -v '^[[:space:]]*$' "$CODEOWNERS_PATH" | sed 's/[[:space:]]\+/ /g')"
-
-if [[ "$content" != "$STANDARD_CONTENT" ]]; then
-  echo " ERROR: CODEOWNERS content is not standard."
-  echo "Expected: $STANDARD_CONTENT"
-  echo "Found: $content"
-  exit 1
+if [[ "$existing" != "$STANDARD_CONTENT" ]]; then
+  printf "%s\n" "$STANDARD_CONTENT" > "$CODEOWNERS_PATH"
+  echo " Wrote $CODEOWNERS_PATH to match the standard."
+else
+  echo " $CODEOWNERS_PATH already compliant."
 fi
-
-echo " CODEOWNERS file is valid."
-
