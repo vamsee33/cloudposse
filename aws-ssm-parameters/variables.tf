@@ -6,7 +6,7 @@ variable "parameter_write_defaults" {
     type            = "SecureString"
     tier            = "Standard"
     overwrite       = "false"
-    allowed_pattern = "^/[a-z0-9]+/[a-z0-9]+/[a-z0-9]+/[a-z0-9]+/[a-z0-9]+/[a-z0-9]+$"
+    allowed_pattern = "^/[a-z0-9]+/[a-z0-9]+/[a-z0-9]+/[a-z0-9]+/[a-z0-9]+/[a-z0-9]+/[a-z0-9]+$"
     data_type       = "text"
   }
 }

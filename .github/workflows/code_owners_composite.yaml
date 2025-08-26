@@ -1,0 +1,27 @@
+name: Reusable Enforce CODEOWNERS
+
+on:
+  workflow_call:
+
+jobs:
+  enforce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure CODEOWNERS Compliance
+        run: .github/scripts/ensure_codeowners.sh
+
+      - name: Fail if CODEOWNERS changed
+        run: |
+          if [[ -n "$(git status --porcelain .github/CODEOWNERS)" ]]; then
+            echo " CODEOWNERS was updated by CI to match standards."
+            echo "   Commit the change into this PR to proceed."
+            git diff -- .github/CODEOWNERS || true
+            exit 1
+          else
+            echo " CODEOWNERS is compliant."
+          fi
+
+      - name: Validate CODEOWNERS
+        run: .github/scripts/validate_codeowners.sh

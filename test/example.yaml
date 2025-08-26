@@ -1,0 +1,83 @@
+components:
+  terraform:
+    vpc-app:
+      vars:
+        region: us-east-1
+        vpc_cidr_block: "172.16.0.0/16"
+        availability_zones:
+          - us-east-1a
+          - us-east-1b
+          - us-east-1c
+    redis-serverless:
+      vars:
+        region: us-east-1
+        vpc_id: !terraform.output vpc-app vpc_id
+        subnet_ids: !terraform.output vpc-app private_subnet_ids
+        allowed_security_groups:
+          - !terraform.output vpc-app vpc_default_security_group_id
+        zone_id:
+          - !terraform.output vpc-app private_zone_id
+        serverless_enabled: true
+        serverless_major_engine_version: "7.0"
+        at_rest_encryption_enabled: true
+        serverless_cache_usage_limits:
+          - data_storage:
+              maximum: 100
+              unit: "GB"
+          - ecpu:
+              maximum: 1000
+              unit: "ECU"
+
+              condition     = can(regex("^(/[a-z0-9]+)+$", each.key))
+        serverless_snapshot_arns_to_restore: []
+        sg_name: "redis-serverless-sg"
+        auth_token: "mySuperSecretToken"
+        kms_key_id: null
+        tags:
+          Environment: "dev"
+          Project: "myapp"
+    ssm-parameters:
+      vars:
+        parameter_write_defaults:
+          description: "Default description for all parameters"
+          type: "SecureString"
+          tier: "Standard"
+          overwrite: true
+          allowed_pattern: "^/[a-z0-9]+/[a-z0-9]+/[a-z0-9]+/[a-z0-9]+/[a-z0-9]+/[a-z0-9]+$"
+          data_type: "text"
+        parameter_write:
+          - service: "app"
+            resource_type: "database"
+            resource_name: "main"
+            value: "db-connection-string"
+          - service: "api"
+            resource_type: "cache"
+            resource_name: "redis"
+            value: "redis-endpoint"
+          - service: "web"
+            resource_type: "config"
+            resource_name: "settings"
+            value: "web-settings"
+        region: "us-east-1"
+        tld: "dwt"
+        tenant: "dev"
+        account: "data"
+        region_naming_convention: "to_short"
+        kms_arn: ""
+    redis-elasticache-tf:
+      vars:
+        # VPC and subnet configuration (created in this component)
+        vpc_cidr_block: "172.16.0.0/16"
+        availability_zones:
+          - us-east-1a
+          - us-east-1b
+          - us-east-1c
+        # Cluster attributes (pass as a map if your module expects it)
+        serverless_cache_usage_limits:
+          - type: "data_storage"
+            maximum: 100
+            unit: "GB"
+          - type: "ecpu"
+            maximum: 1000
+            unit: "ECU"
+        family: "redis7"
