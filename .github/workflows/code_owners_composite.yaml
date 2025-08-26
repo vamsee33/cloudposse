@@ -8,11 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Make script executable
+        run: chmod +x .github/scripts/ensure_codeowners.sh 
 
       - name: Ensure CODEOWNERS Compliance
         run: .github/scripts/ensure_codeowners.sh
-      - name: Make script executable
-        run: chmod +x .github/scripts/ensure_codeowners.sh  
+       
 
       - name: Fail if CODEOWNERS changed
         run: |
