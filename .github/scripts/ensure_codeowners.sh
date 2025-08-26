@@ -2,30 +2,26 @@
 set -euo pipefail
 
 CODEOWNERS_PATH=".github/CODEOWNERS"
-STANDARD_CONTENT="* @growhi/devops"
 
-mkdir -p .github
+# ---- POLICY: Strict (default) ----
+STANDARD_CONTENT="* @DriveWealth/devops"
 
-# Normalize existing file content (remove blank lines, normalize whitespace)
-if [[ -f "$CODEOWNERS_PATH" ]]; then
-  existing="$(grep -v '^[[:space:]]*$' "$CODEOWNERS_PATH" | sed 's/[[:space:]]\+/ /g')"
-else
-  existing=""
+# ---- POLICY: Targeted (uncomment to use instead) ----
+# STANDARD_CONTENT=".github/CODEOWNERS @DriveWealth/devops"
+
+if [[ ! -f "$CODEOWNERS_PATH" ]]; then
+  echo " ERROR: $CODEOWNERS_PATH does not exist."
+  exit 1
 fi
 
-# Compare and rewrite if needed
-if [[ "$existing" != "$STANDARD_CONTENT" ]]; then
-  echo "🔧 CODEOWNERS is not compliant. Rewriting it to standard."
-  printf "%s\n" "$STANDARD_CONTENT" > "$CODEOWNERS_PATH"
+content="$(grep -v '^[[:space:]]*$' "$CODEOWNERS_PATH" | sed 's/[[:space:]]\+/ /g')"
 
-  # Git status check to fail the job and notify the dev
-  if [[ -n "$(git status --porcelain "$CODEOWNERS_PATH")" ]]; then
-    echo "❌ CODEOWNERS was updated by CI to match standards."
-    echo "👉 Please commit the updated $CODEOWNERS_PATH into this PR."
-    git diff "$CODEOWNERS_PATH"
-    exit 1
-  fi
-else
-  echo "✅ CODEOWNERS is already compliant."
+if [[ "$content" != "$STANDARD_CONTENT" ]]; then
+  echo " ERROR: CODEOWNERS content is not standard."
+  echo "Expected: $STANDARD_CONTENT"
+  echo "Found: $content"
+  exit 1
 fi
+
+echo " CODEOWNERS file is valid."
 
