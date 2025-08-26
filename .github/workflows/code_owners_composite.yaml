@@ -11,6 +11,8 @@ jobs:
 
       - name: Ensure CODEOWNERS Compliance
         run: .github/scripts/ensure_codeowners.sh
+      - name: Make script executable
+        run: chmod +x .github/scripts/ensure_codeowners.sh  
 
       - name: Fail if CODEOWNERS changed
         run: |
