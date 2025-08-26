@@ -2,25 +2,30 @@
 set -euo pipefail
 
 CODEOWNERS_PATH=".github/CODEOWNERS"
-
-# ---- POLICY: Strict (default) ----
 STANDARD_CONTENT="* @growhi/devops"
-
-# ---- POLICY: Targeted (uncomment to use instead) ----
-# STANDARD_CONTENT=".github/CODEOWNERS @growhi/devops"
 
 mkdir -p .github
 
-# Read existing if present, normalize whitespace
+# Normalize existing file content (remove blank lines, normalize whitespace)
 if [[ -f "$CODEOWNERS_PATH" ]]; then
   existing="$(grep -v '^[[:space:]]*$' "$CODEOWNERS_PATH" | sed 's/[[:space:]]\+/ /g')"
 else
   existing=""
 fi
 
+# Compare and rewrite if needed
 if [[ "$existing" != "$STANDARD_CONTENT" ]]; then
+  echo "🔧 CODEOWNERS is not compliant. Rewriting it to standard."
   printf "%s\n" "$STANDARD_CONTENT" > "$CODEOWNERS_PATH"
-  echo " Wrote $CODEOWNERS_PATH to match the standard."
+
+  # Git status check to fail the job and notify the dev
+  if [[ -n "$(git status --porcelain "$CODEOWNERS_PATH")" ]]; then
+    echo "❌ CODEOWNERS was updated by CI to match standards."
+    echo "👉 Please commit the updated $CODEOWNERS_PATH into this PR."
+    git diff "$CODEOWNERS_PATH"
+    exit 1
+  fi
 else
-  echo " $CODEOWNERS_PATH already compliant."
+  echo "✅ CODEOWNERS is already compliant."
 fi
+
