@@ -1,0 +1,12 @@
+name: Enforce CODEOWNERS
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  enforce:
+    uses: .github/workflows/reusable-enforce-codeowners.yml
