@@ -1,0 +1,151 @@
+## 1. `.github/CODEOWNERS`
+
+This file is managed by the `ensure_codeowners.sh` script and must match the expected standard.
+
+```text
+* @DriveWealth/devops
+```
+
+---
+
+## 2. `.github/scripts/codeowners_config.sh`
+
+This shared script defines reusable variables used by both the ensure and validate scripts.
+
+```bash
+#!/usr/bin/env bash
+
+# Define the required CODEOWNERS content for this repository.
+# This enforces that all files are owned by a specific team.
+STANDARD_CONTENT="* @DriveWealth/devops"
+
+# Path to the CODEOWNERS file that should be enforced.
+CODEOWNERS_PATH=".github/CODEOWNERS"
+```
+
+---
+
+## 3. `.github/scripts/ensure_codeowners.sh`
+
+This script checks if the `CODEOWNERS` file matches the standard and updates it if necessary.
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Get the directory of the current script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/codeowners_config.sh"
+
+# Ensure the directory exists
+mkdir -p "$(dirname "$CODEOWNERS_PATH")"
+
+# Read and normalize existing CODEOWNERS content (remove empty lines and normalize spacing)
+if [[ -f "$CODEOWNERS_PATH" ]]; then
+  existing=$(grep -v '^[[:space:]]*$' "$CODEOWNERS_PATH" | sed 's/[[:space:]]\+/ /g')
+else
+  existing=""
+fi
+
+# If the current content doesn't match the standard, update it
+if [[ "$existing" != "$STANDARD_CONTENT" ]]; then
+  printf "%s\n" "$STANDARD_CONTENT" > "$CODEOWNERS_PATH"
+  echo "CODEOWNERS file updated to match the standard."
+else
+  echo "CODEOWNERS file is already compliant."
+fi
+```
+
+---
+
+## 4. `.github/scripts/validate_codeowners.sh`
+
+This script fails if the `CODEOWNERS` file doesn't match the expected standard.
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Get the directory of the current script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/codeowners_config.sh"
+
+# Check that the file exists
+if [[ ! -f "$CODEOWNERS_PATH" ]]; then
+  echo "ERROR: $CODEOWNERS_PATH does not exist."
+  exit 1
+fi
+
+# Read and normalize CODEOWNERS content
+content=$(grep -v '^[[:space:]]*$' "$CODEOWNERS_PATH" | sed 's/[[:space:]]\+/ /g')
+
+# Validate against standard
+if [[ "$content" != "$STANDARD_CONTENT" ]]; then
+  echo "ERROR: CODEOWNERS file does not match the standard."
+  echo "Expected: $STANDARD_CONTENT"
+  echo "Found:    $content"
+  exit 1
+fi
+
+echo "CODEOWNERS file is valid."
+```
+
+---
+
+## 5. `.github/workflows/codeowners-validator.yml`
+
+This is a **reusable GitHub Actions workflow**. It runs the ensure and validate scripts and fails the workflow if any auto-correction occurs without being committed.
+
+```yaml
+name: Reusable Enforce CODEOWNERS
+
+on:
+  workflow_call:
+
+jobs:
+  enforce:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: chmod +x .github/scripts/*.sh
+
+      - name: Ensure CODEOWNERS compliance (auto-correct)
+        run: .github/scripts/ensure_codeowners.sh
+
+      - name: Fail if CODEOWNERS was changed
+        run: |
+          if [[ -n "$(git status --porcelain .github/CODEOWNERS)" ]]; then
+            echo "CODEOWNERS was updated by CI to match standards."
+            echo "Commit the change into this PR to proceed."
+            git diff -- .github/CODEOWNERS || true
+            exit 1
+          else
+            echo "CODEOWNERS is compliant."
+          fi
+
+      - name: Validate CODEOWNERS content
+        run: .github/scripts/validate_codeowners.sh
+```
+
+---
+
+## 6. `.github/workflows/on-pr.yml`
+
+This workflow runs the reusable workflow on every pull request to enforce the CODEOWNERS standard.
+
+```yaml
+name: PR CODEOWNERS Check
+
+on:
+  pull_request:
+
+jobs:
+  enforce-codeowners:
+    uses: ./.github/workflows/codeowners-validator.yml
+```
+
+---
