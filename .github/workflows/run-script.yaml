@@ -1,4 +1,4 @@
-name: Run Hardcoded Script from This Repo
+name: Run Script Reusable Workflow
 
 on:
   workflow_call:
@@ -9,20 +9,9 @@ on:
 jobs:
   run-script-job:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout calling repo (Repo B)
-        uses: actions/checkout@v4
-
-      - name: Clone reusable workflow repo (Repo A)
-        run: |
-          git clone https://x-access-token:${{ secrets.GH_APP_TOKEN }}@github.com/<your-org-or-username>/repo-a.git reusable-repo
-
-      - name: Make script executable
-        run: chmod +x reusable-repo/scripts/run.sh
-
-      - name: Run the script
-        run: ./reusable-repo/scripts/run.sh
+      - name: Run shared script action
+        uses: ./.github/actions/run-script
 
       - name: GitHub API call using GH_APP_TOKEN
         env:
