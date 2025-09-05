@@ -16,8 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repo A
-        uses: actions/checkout@v4
+      
 
       - name: Generate GitHub App Token
         id: generate_token
@@ -25,6 +24,13 @@ jobs:
         with:
           app_id: ${{ secrets.APP_ID }}
           private_key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout Repo A
+        uses: actions/checkout@v4
+        with:
+          repository: vamsee33/cloudposse
+          token: ${{ steps.generate_token.outputs.token }}
+          ref: main    
 
       - name: Run script from local action
         uses: ./.github/actions/run-script
