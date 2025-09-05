@@ -1,0 +1,11 @@
+name: Run Shared Script
+description: Runs the shared bash script in Repo A
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run script
+      shell: bash
+      run: |
+        chmod +x ${{ github.action_path }}/run.sh
+        ${{ github.action_path }}/run.sh
