@@ -12,6 +12,9 @@ jobs:
     steps:
       - name: Checkout Repo A
         uses: actions/checkout@v4
+        with:
+          repository: vamsee33/cloudposse
+          token: ${{ secrets.GH_APP_TOKEN }}
 
       - name: Run shared script action
         uses: ./.github/actions/run-script
