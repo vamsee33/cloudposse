@@ -5,6 +5,9 @@ on:
     secrets:
       GH_APP_TOKEN:
         required: true
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
   run-script-job:
