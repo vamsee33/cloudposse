@@ -15,6 +15,7 @@ jobs:
         with:
           repository: vamsee33/cloudposse
           token: ${{ secrets.GH_APP_TOKEN }}
+          ref: main
 
       - name: Run shared script action
         uses: ./.github/actions/run-script
