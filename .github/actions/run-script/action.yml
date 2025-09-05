@@ -4,6 +4,8 @@ description: Runs the shared bash script in Repo A
 runs:
   using: "composite"
   steps:
+    - name: Checkout repo
+        uses: actions/checkout@v4
     - name: Run script
       shell: bash
       run: |
