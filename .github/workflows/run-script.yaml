@@ -10,6 +10,9 @@ jobs:
   run-script-job:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Repo A
+        uses: actions/checkout@v4
+
       - name: Run shared script action
         uses: ./.github/actions/run-script
 
@@ -20,3 +23,4 @@ jobs:
           curl -s -H "Authorization: token $GH_TOKEN" \
                -H "Accept: application/vnd.github+json" \
                https://api.github.com/repos/${{ github.repository }}/commits | jq '.[0]'
+
