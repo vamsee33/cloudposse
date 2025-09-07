@@ -1,0 +1,100 @@
+Great! You're looking to:
+
+* Replace manual token passing with **GitHub App authentication**, using:
+
+  * **App ID**
+  * **Private Key**
+* Use the generated **GitHub App installation access token** for the `cloudposse/github-action-validate-codeowners` validation step.
+
+---
+
+## ✅ Updated Workflow Features
+
+This updated reusable workflow will:
+
+1. **Checkout the code**
+2. **Authenticate via GitHub App (App ID + Private Key)**
+3. **Generate a GitHub App installation token**
+4. **Ensure `CODEOWNERS` exists**
+5. **Use the token to validate the `CODEOWNERS` file**
+
+---
+
+## 📄 Reusable Workflow: `.github/workflows/reusable-codeowners-validator.yml`
+
+```yaml
+name: Reusable - CODEOWNERS Validator
+
+on:
+  workflow_call:
+    secrets:
+      APP_ID:
+        required: true
+      PRIVATE_KEY:
+        required: true
+
+jobs:
+  validate-codeowners:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate GitHub App token
+        id: generate_token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Ensure CODEOWNERS file exists
+        run: |
+          if [ ! -f .github/CODEOWNERS ]; then
+            echo "❌ CODEOWNERS file is missing in .github/"
+            exit 1
+          else
+            echo "✅ CODEOWNERS file found."
+          fi
+
+      - name: Validate CODEOWNERS file using CloudPosse Action
+        uses: cloudposse/github-action-validate-codeowners@0.4.0
+        with:
+          token: ${{ steps.generate_token.outputs.token }}
+```
+
+---
+
+## 🧪 How to Call This Reusable Workflow
+
+Here's an example of how to **call this workflow** from another repo or workflow file:
+
+```yaml
+name: Run CODEOWNERS Validation
+
+on:
+  pull_request:
+
+jobs:
+  run-validator:
+    uses: your-org/your-repo/.github/workflows/reusable-codeowners-validator.yml@main
+    secrets:
+      APP_ID: ${{ secrets.MY_APP_ID }}
+      PRIVATE_KEY: ${{ secrets.MY_APP_PRIVATE_KEY }}
+```
+
+---
+
+## 🔐 Required Secrets
+
+Make sure the **calling repository** has the following secrets:
+
+* `MY_APP_ID`: GitHub App ID (as a number, e.g., `123456`)
+* `MY_APP_PRIVATE_KEY`: The full private key (multi-line string)
+
+You can generate the GitHub App token using the [`tibdex/github-app-token`](https://github.com/tibdex/github-app-token) action, which is secure and well-supported.
+
+
