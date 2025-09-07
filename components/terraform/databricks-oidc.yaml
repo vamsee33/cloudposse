@@ -1,0 +1,23 @@
+import:
+  - vendor/cloudposse/github-oidc-role/defaults
+
+components:
+  terraform:
+    github-oidc-role/databricks-cicd:
+      metadata:
+        component: github-oidc-role
+        inherits:
+          - github-oidc-role/defaults
+      vars:
+        enabled: true
+        github_actions_allowed_repos:
+          - DriveWealth/databricks-infra
+        attributes: ["databricks-cicd"]
+        iam_policies:
+          - databricks-cicd
+        databricks_cicd_policy_configuration:
+          enable_ssm_access: true
+          enable_secretsmanager_access: true
+        tags:
+          dwt:cost-allocation:Owner: devops
+          dwt:cost-allocation:Application: infrastructure-foundation
